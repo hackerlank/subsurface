@@ -22,7 +22,6 @@ WebServices::WebServices(QWidget* parent, Qt::WindowFlags f): QDialog(parent, f)
 	connect(ui.buttonBox, SIGNAL(clicked(QAbstractButton*)), this, SLOT(buttonClicked(QAbstractButton*)));
 	connect(ui.download, SIGNAL(clicked(bool)), this, SLOT(startDownload()));
 	ui.buttonBox->button(QDialogButtonBox::Apply)->setEnabled(false);
-
 }
 
 void WebServices::hidePassword()
@@ -34,6 +33,12 @@ void WebServices::hidePassword()
 void WebServices::hideUpload()
 {
 	ui.upload->hide();
+}
+
+QNetworkAccessManager *WebServices::manager()
+{
+	static QNetworkAccessManager *manager = new QNetworkAccessManager(qApp);
+	return manager;
 }
 
 // #
@@ -88,9 +93,7 @@ void SubsurfaceWebServices::buttonClicked(QAbstractButton* button)
 	}
 		break;
 	case QDialogButtonBox::RejectRole:
-		// we may want to clean up after ourselves, but this
-		// makes Subsurface throw a SIGSEGV...
-		// manager->deleteLater();
+		// we may want to clean up after ourselves
 		reply->deleteLater();
 		ui.progressBar->setMaximum(1);
 		break;
@@ -107,11 +110,10 @@ void SubsurfaceWebServices::startDownload()
 	QUrl url("http://api.hohndel.org/api/dive/get/");
 	url.addQueryItem("login", ui.userID->text());
 
-	manager = new QNetworkAccessManager(this);
 	QNetworkRequest request;
 	request.setUrl(url);
 	request.setRawHeader("Accept", "text/xml");
-	reply = manager->get(request);
+	reply = manager()->get(request);
 	ui.status->setText(tr("Wait a bit untill we have something..."));
 	ui.progressBar->setRange(0,0); // this makes the progressbar do an 'infinite spin'
 	ui.download->setEnabled(false);
@@ -135,7 +137,6 @@ void SubsurfaceWebServices::downloadFinished()
 	if (resultCode == DD_STATUS_OK){
 		ui.buttonBox->button(QDialogButtonBox::Apply)->setEnabled(true);
 	}
-	manager->deleteLater();
 	reply->deleteLater();
 }
 
@@ -144,7 +145,6 @@ void SubsurfaceWebServices::downloadError(QNetworkReply::NetworkError)
 	ui.download->setEnabled(true);
 	ui.progressBar->setRange(0,1);
 	ui.status->setText(QString::number((int)QNetworkRequest::HttpStatusCodeAttribute));
-	manager->deleteLater();
 	reply->deleteLater();
 }
 
