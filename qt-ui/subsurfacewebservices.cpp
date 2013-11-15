@@ -197,6 +197,7 @@ void WebServices::resetState()
 SubsurfaceWebServices* SubsurfaceWebServices::instance()
 {
 	static SubsurfaceWebServices *self = new SubsurfaceWebServices();
+	self->QObject::setParent(qApp);
 	self->setAttribute(Qt::WA_QuitOnClose, false);
 	return self;
 }
@@ -433,6 +434,7 @@ out:
 DivelogsDeWebServices* DivelogsDeWebServices::instance()
 {
 	static DivelogsDeWebServices *self = new DivelogsDeWebServices();
+	self->QObject::setParent(qApp);
 	self->setAttribute(Qt::WA_QuitOnClose, false);
 	return self;
 }
